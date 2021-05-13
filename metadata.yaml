@@ -1,0 +1,19 @@
+# Copyright 2021 jarred
+# See LICENSE file for licensing details.
+name: charm-kaniko-sidecar
+description: |
+  Kaniko charm to run Kaniko on Kubernetes with Juju.
+summary: |
+  Kaniko charm to run Kaniko on Kubernetes with Juju.
+
+# TEMPLATE-TODO: replace with containers for your workload (delete for non-k8s)
+containers:
+  executor:
+    resource: kaniko-image
+
+# TEMPLATE-TODO: each container defined above must specify an oci-image resource
+resources:
+  kaniko-image:
+    type: oci-image
+    description: OCI image for kaniko (gcr.io/kaniko-project/executor:latest)
+
