@@ -26,26 +26,47 @@ http = urllib3.PoolManager()
 
 SERVICE_PORT = 10000
 
+
 class KaniqueueCharm(CharmBase):
     """Charm the service."""
 
     def __init__(self, *args):
         super().__init__(*args)
-        self.framework.observe(self.on.kaniqueue_pebble_ready, self._on_kaniqueue_pebble_ready)
+        self.framework.observe(
+            self.on.kaniqueue_pebble_ready, self._on_kaniqueue_pebble_ready
+        )
         self.framework.observe(self.on.config_changed, self._on_config_changed)
         self.framework.observe(self.on.add_job_action, self._add_job_action)
 
-        self.ingress = IngressRequires(self, {
-            "service-hostname": "kaniqueue.juju",
-            "service-name": self.app.name,
-            "service-port": SERVICE_PORT
-        })
+        self.ingress = IngressRequires(
+            self,
+            {
+                "service-hostname": "kaniqueue.juju",
+                "service-name": self.app.name,
+                "service-port": SERVICE_PORT,
+            },
+        )
 
     def _add_job_action(self, event):
-        if event.params["context"] != "" and event.params["dockerfile"] != "" and event.params["destination"] != "":
+        if (
+            event.params["context"] != ""
+            and event.params["dockerfile"] != ""
+            and event.params["destination"] != ""
+        ):
             unit = self.unit.name.replace("/", "-")
-            params = json.dumps({"context": event.params["context"],"dockerfile": event.params["dockerfile"],"destination": event.params["destination"]})
-            http.request("POST", f"{unit}.{self.app.name}-endpoints.{self.model.name}.svc.cluster.local:{SERVICE_PORT}/jobs", headers={'Content-Type': 'application/json'}, body=params)
+            params = json.dumps(
+                {
+                    "context": event.params["context"],
+                    "dockerfile": event.params["dockerfile"],
+                    "destination": event.params["destination"],
+                }
+            )
+            http.request(
+                "POST",
+                f"{unit}.{self.app.name}-endpoints.{self.model.name}.svc.cluster.local:{SERVICE_PORT}/jobs",
+                headers={"Content-Type": "application/json"},
+                body=params,
+            )
             event.set_results({"result": "Job queued."})
         else:
             event.fail("Sufficient params not provided")
@@ -65,7 +86,6 @@ class KaniqueueCharm(CharmBase):
         # Learn more about statuses in the SDK docs:
         # https://juju.is/docs/sdk/constructs#heading--statuses
         self.unit.status = ActiveStatus()
-
 
     def _on_config_changed(self, event):
         """Handle the config-changed event"""
@@ -92,8 +112,10 @@ class KaniqueueCharm(CharmBase):
         self.unit.status = ActiveStatus()
 
     def _set_auth_config(self):
-        with open("/kaniko/.docker/config.json", 'w') as config:
-            config.write(f'{{"auths": {{"https://index.docker.io/v1/": {{"auth": "{self.config["auth"]}"}}}}}}')
+        with open("/kaniko/.docker/config.json", "w") as config:
+            config.write(
+                f'{{"auths": {{"https://index.docker.io/v1/": {{"auth": "{self.config["auth"]}"}}}}}}'
+            )
             config.close()
 
     def _kaniqueue_layer(self):
@@ -106,12 +128,11 @@ class KaniqueueCharm(CharmBase):
                     "summary": "kaniqueue",
                     "command": "/kaniko/kaniqueue",
                     "startup": "enabled",
-                    "environment": {
-
-                    },
+                    "environment": {},
                 }
             },
         }
+
 
 if __name__ == "__main__":
     main(KaniqueueCharm)
