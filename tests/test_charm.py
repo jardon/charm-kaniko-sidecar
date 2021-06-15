@@ -6,14 +6,14 @@
 import unittest
 from unittest.mock import Mock
 
-from charm import CharmKanikoSidecarCharm
+from charm import CharmkaniqueueSidecarCharm
 from ops.model import ActiveStatus
 from ops.testing import Harness
 
 
 class TestCharm(unittest.TestCase):
     def setUp(self):
-        self.harness = Harness(CharmKanikoSidecarCharm)
+        self.harness = Harness(CharmkaniqueueSidecarCharm)
         self.addCleanup(self.harness.cleanup)
         self.harness.begin()
 

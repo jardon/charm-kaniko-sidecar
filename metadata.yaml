@@ -1,19 +1,35 @@
 # Copyright 2021 jarred
 # See LICENSE file for licensing details.
-name: charm-kaniko-sidecar
+name: kaniqueue
 description: |
-  Kaniko charm to run Kaniko on Kubernetes with Juju.
+  Kaniqueue charm to run Kaniko on Kubernetes with Juju.
 summary: |
-  Kaniko charm to run Kaniko on Kubernetes with Juju.
+  Kaniqueue charm to run Kaniko on Kubernetes with Juju.
 
 # TEMPLATE-TODO: replace with containers for your workload (delete for non-k8s)
 containers:
-  executor:
-    resource: kaniko-image
+  kaniqueue:
+    resource: kaniqueue-image
+    mounts:
+      - storage: docker-config
+        location: /kaniko/.docker/
 
 # TEMPLATE-TODO: each container defined above must specify an oci-image resource
 resources:
-  kaniko-image:
+  kaniqueue-image:
     type: oci-image
-    description: OCI image for kaniko (gcr.io/kaniko-project/executor:latest)
+    description: OCI image for kaniqueue (jardon/kaniqueue)
 
+storage:
+  docker-config:
+    type: filesystem
+    location: /kaniko/.docker/
+
+provides:
+  build-api:
+    interface: http
+    optional: true
+
+requires:
+  ingress:
+    interface: ingress

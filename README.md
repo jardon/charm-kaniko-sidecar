@@ -1,4 +1,4 @@
-# charm-kaniko-sidecar
+# charm-kaniqueue-sidecar
 
 ## Description
 

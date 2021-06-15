@@ -8,7 +8,8 @@
 # Learn more about config at: https://juju.is/docs/sdk/config
 
 options:
-  thing:
-    default: 🎁
-    description: A thing used by the charm.
+  auth:
+    default: ""
+    description: Auth key for docker
     type: string
+  
