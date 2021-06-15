@@ -48,7 +48,8 @@ class KaniqueueCharm(CharmBase):
             http.request("POST", f"{unit}.{self.app.name}-endpoints.{self.model.name}.svc.cluster.local:{SERVICE_PORT}/jobs", headers={'Content-Type': 'application/json'}, body=params)
             event.set_results({"result": "Job queued."})
         else:
-            event.set_results({"result": "Sufficient params not provided"})
+            event.fail("Sufficient params not provided")
+            logging.error(f"Sufficient params not provided for job")
 
     def _on_kaniqueue_pebble_ready(self, event):
         """Define and start a workload using the Pebble API"""
@@ -64,7 +65,6 @@ class KaniqueueCharm(CharmBase):
         # Learn more about statuses in the SDK docs:
         # https://juju.is/docs/sdk/constructs#heading--statuses
         self.unit.status = ActiveStatus()
-        logging.info(self.unit.status)
 
 
     def _on_config_changed(self, event):
