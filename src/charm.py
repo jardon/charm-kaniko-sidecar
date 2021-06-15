@@ -18,9 +18,13 @@ from ops.charm import CharmBase
 from ops.main import main
 from ops.model import ActiveStatus
 from charms.nginx_ingress_integrator.v0.ingress import IngressRequires
+import urllib3
+import json
 
 logger = logging.getLogger(__name__)
+http = urllib3.PoolManager()
 
+SERVICE_PORT = 10000
 
 class KaniqueueCharm(CharmBase):
     """Charm the service."""
@@ -29,12 +33,22 @@ class KaniqueueCharm(CharmBase):
         super().__init__(*args)
         self.framework.observe(self.on.kaniqueue_pebble_ready, self._on_kaniqueue_pebble_ready)
         self.framework.observe(self.on.config_changed, self._on_config_changed)
+        self.framework.observe(self.on.add_job_action, self._add_job_action)
 
         self.ingress = IngressRequires(self, {
             "service-hostname": "kaniqueue.juju",
             "service-name": self.app.name,
-            "service-port": 10000
+            "service-port": SERVICE_PORT
         })
+
+    def _add_job_action(self, event):
+        if event.params["context"] != "" and event.params["dockerfile"] != "" and event.params["destination"] != "":
+            unit = self.unit.name.replace("/", "-")
+            params = json.dumps({"context": event.params["context"],"dockerfile": event.params["dockerfile"],"destination": event.params["destination"]})
+            http.request("POST", f"{unit}.{self.app.name}-endpoints.{self.model.name}.svc.cluster.local:{SERVICE_PORT}/jobs", headers={'Content-Type': 'application/json'}, body=params)
+            event.set_results({"result": "Job queued."})
+        else:
+            event.set_results({"result": "Sufficient params not provided"})
 
     def _on_kaniqueue_pebble_ready(self, event):
         """Define and start a workload using the Pebble API"""

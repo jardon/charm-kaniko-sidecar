@@ -7,10 +7,18 @@
 #
 # Learn more about actions at: https://juju.is/docs/sdk/actions
 
-fortune:
-  description: Returns a pithy phrase.
+add-job:
+  description: Adds job to queue.
   params:
-    fail:
-      description: "Fail with this message"
+    context:
+      description: "Git URL address for repository"
+      type: string
+      default: ""
+    dockerfile: 
+      description: "Relative path to dockerfile in repository"
+      type: string
+      default: ""
+    destination:
+      description: "Docker Hub repository URL"
       type: string
       default: ""
