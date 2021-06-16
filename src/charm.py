@@ -14,7 +14,7 @@ develop a new k8s charm using the Operator Framework:
 
 import logging
 
-from ops.charm import CharmBase
+from ops.charm import CharmBase, RelationCreatedEvent
 from ops.main import main
 from ops.model import ActiveStatus
 from charms.nginx_ingress_integrator.v0.ingress import IngressRequires
@@ -37,6 +37,9 @@ class KaniqueueCharm(CharmBase):
         )
         self.framework.observe(self.on.config_changed, self._on_config_changed)
         self.framework.observe(self.on.add_job_action, self._add_job_action)
+        self.framework.observe(
+            self.on.build_api_relation_created, self._on_build_api_relation_created
+        )
 
         self.ingress = IngressRequires(
             self,
@@ -71,6 +74,17 @@ class KaniqueueCharm(CharmBase):
         else:
             event.fail("Sufficient params not provided")
             logging.error(f"Sufficient params not provided for job")
+
+    def _on_build_api_relation_created(self, event: RelationCreatedEvent) -> None:
+        if not self.unit.is_leader():
+            return
+        event.relation.data[self.app].update(
+            {
+                "app_endpoint": f"{self.app.name}-endpoints.{self.model.name}.svc.cluster.local",
+                "port": SERVICE_PORT,
+            }
+        )
+        return
 
     def _on_kaniqueue_pebble_ready(self, event):
         """Define and start a workload using the Pebble API"""
