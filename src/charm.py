@@ -81,7 +81,7 @@ class KaniqueueCharm(CharmBase):
         event.relation.data[self.app].update(
             {
                 "app_endpoint": f"{self.app.name}-endpoints.{self.model.name}.svc.cluster.local",
-                "port": SERVICE_PORT,
+                "port": str(SERVICE_PORT),
             }
         )
         return
